@@ -1,0 +1,38 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: budget-app-trigger-template
+  namespace: tekton-pipelines
+spec:
+  params:
+  - name: gitrepositoryurl
+    description: The git repository url
+  - name: gitrevision
+    description: The git revision
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      generateName: budget-app-pipeline-run-
+      namespace: tekton-pipelines
+    spec:
+      pipelineRef:
+        name: budget-app-pipeline
+      workspaces:
+      - name: shared-workspace
+        volumeClaimTemplate:
+          spec:
+            accessModes:
+            - ReadWriteOnce
+            resources:
+              requests:
+                storage: 1Gi
+      params:
+      - name: git-url
+        value: $(tt.params.gitrepositoryurl)
+      - name: git-revision
+        value: $(tt.params.gitrevision)
+      - name: image-name
+        value: hema995/budgetapp
+      - name: image-tag
+        value: $(context.pipelineRun.name)

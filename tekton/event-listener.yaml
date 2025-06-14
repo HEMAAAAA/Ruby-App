@@ -1,0 +1,13 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: budget-app-event-listener
+  namespace: tekton-pipelines
+spec:
+  serviceAccountName: tekton-pipeline-runner
+  triggers:
+  - name: github-push
+    bindings:
+    - ref: budget-app-trigger-binding
+    template:
+      ref: budget-app-trigger-template

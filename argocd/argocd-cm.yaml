@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-cm
+    app.kubernetes.io/part-of: argocd
+data:
+  # Add custom UI settings
+  ui.bannerpermanent: "Budget App Production Environment"
+  # Add custom resource ignores
+  resource.exclusions: |
+    - apiGroups:
+      - events.k8s.io
+      kinds:
+      - Event
+      clusters:
+      - "*"

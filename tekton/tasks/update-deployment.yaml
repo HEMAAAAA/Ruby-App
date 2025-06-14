@@ -1,0 +1,31 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: update-deployment
+  namespace: tekton-pipelines
+spec:
+  workspaces:
+  - name: source
+    description: The workspace containing the kubernetes manifests
+  params:
+  - name: image
+    description: The new image name and tag
+    type: string
+  - name: path
+    description: Path to the deployment file
+    type: string
+  steps:
+  - name: update-yaml
+    image: bitnami/kubectl:latest
+    script: |
+      sed -i "s|image: .*|image: $(params.image)|g" $(workspaces.source.path)/$(params.path)
+      cat $(workspaces.source.path)/$(params.path)
+  - name: git-commit
+    image: alpine/git:v2.26.2
+    script: |
+      cd $(workspaces.source.path)
+      git config --global user.email "tekton@example.com"
+      git config --global user.name "Tekton CI"
+      git add $(params.path)
+      git commit -m "Update image to $(params.image)"
+      git push

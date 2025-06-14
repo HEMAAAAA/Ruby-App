@@ -1,0 +1,27 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: kaniko
+  namespace: tekton-pipelines
+spec:
+  workspaces:
+  - name: source
+    description: The workspace containing the Dockerfile
+  params:
+  - name: IMAGE
+    description: Name (reference) of the image to build
+  - name: DOCKERFILE
+    description: Path to the Dockerfile to build
+    default: ./Dockerfile
+  steps:
+  - name: build-and-push
+    image: gcr.io/kaniko-project/executor:v1.9.0
+    env:
+    - name: DOCKER_CONFIG
+      value: /tekton/home/.docker
+    command:
+    - /kaniko/executor
+    - --dockerfile=$(params.DOCKERFILE)
+    - --context=$(workspaces.source.path)
+    - --destination=$(params.IMAGE)
+    - --skip-tls-verify

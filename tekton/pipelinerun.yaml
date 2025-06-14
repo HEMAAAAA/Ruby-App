@@ -1,0 +1,26 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: budget-app-pipeline-run
+  namespace: tekton-pipelines
+spec:
+  pipelineRef:
+    name: budget-app-pipeline
+  workspaces:
+  - name: shared-workspace
+    volumeClaimTemplate:
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+  params:
+  - name: git-url
+    value: https://github.com/HEMAAAAA/Budget-App.git
+  - name: git-revision
+    value: main
+  - name: image-name
+    value: hema995/budgetapp
+  - name: image-tag
+    value: $(context.pipelineRun.name)-$(context.pipelineRun.uid)

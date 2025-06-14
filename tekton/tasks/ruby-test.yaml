@@ -1,0 +1,20 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: ruby-test
+  namespace: tekton-pipelines
+spec:
+  workspaces:
+  - name: source
+    description: The workspace containing the source code
+  steps:
+  - name: run-tests
+    image: ruby:3.1.2
+    workingDir: $(workspaces.source.path)
+    script: |
+      apt-get update -qq && apt-get install -y postgresql-client nodejs npm
+      gem install bundler
+      bundle install
+      npm install
+      bundle exec rails db:create db:migrate RAILS_ENV=test
+      bundle exec rspec
