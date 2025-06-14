@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: web
-        image: hema995/budgetapp:latest
+        image: docker.io/hema995/budgetapp:latest
         ports:
         - containerPort: 3000
         env:

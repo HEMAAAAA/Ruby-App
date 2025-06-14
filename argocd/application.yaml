@@ -3,12 +3,20 @@ kind: Application
 metadata:
   name: budget-app
   namespace: argocd
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: docker.io/hema995/budgetapp
+    argocd-image-updater.argoproj.io/docker.io/hema995/budgetapp.update-strategy: semver
+    argocd-image-updater.argoproj.io/docker.io/hema995/budgetapp.allow-tags: regexp:^[0-9]+\.[0-9]+\.[0-9]+$
+    argocd-image-updater.argoproj.io/write-back-method: git:secret:argocd/git-creds
 spec:
   project: default
   source:
-    repoURL: https://github.com/HEMAAAAA/Budget-App.git
+    repoURL: https://github.com/HEMAAAAA/Ruby-App.git
     targetRevision: HEAD
     path: kubernetes
+    kustomize:
+      images:
+      - docker.io/hema995/budgetapp:latest
   destination:
     server: https://kubernetes.default.svc
     namespace: budget-app

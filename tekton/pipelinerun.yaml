@@ -1,26 +1,27 @@
+# pipelinerun.yaml
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  name: budget-app-pipeline-run
-  namespace: tekton-pipelines
+  generateName: ci-pipeline-run-
 spec:
+  serviceAccountName: tekton-pipeline-sa
   pipelineRef:
-    name: budget-app-pipeline
+    name: ci-pipeline
   workspaces:
-  - name: shared-workspace
-    volumeClaimTemplate:
-      spec:
-        accessModes:
-        - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
+    - name: shared-workspace
+      persistentVolumeClaim:
+        claimName: tekton-workspace-pvc
+  resources:
+    - name: git-repo
+      resourceRef:
+        name: git-source
+    - name: docker-image
+      resourceRef:
+        name: docker-image
   params:
-  - name: git-url
-    value: https://github.com/HEMAAAAA/Budget-App.git
-  - name: git-revision
-    value: main
-  - name: image-name
-    value: hema995/budgetapp
-  - name: image-tag
-    value: $(context.pipelineRun.name)-$(context.pipelineRun.uid)
+    - name: IMAGE
+      value: docker.io/hema995/budgetapp
+    - name: IMAGE_TAG
+      value: $(context.pipelineRun.uid)
+    - name: MANIFEST_PATH
+      value: k8s

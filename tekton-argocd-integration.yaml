@@ -1,0 +1,103 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: argocd-sync
+spec:
+  params:
+    - name: application-name
+      description: Name of the ArgoCD application
+      default: budget-app
+    - name: argocd-url
+      description: URL of the ArgoCD server
+      default: argocd-server.argocd.svc.cluster.local
+    - name: flags
+      description: Additional flags for the sync command
+      default: "--async"
+  steps:
+    - name: sync
+      image: argoproj/argocd:latest
+      script: |
+        #!/bin/sh
+        argocd app sync $(params.application-name) $(params.flags) \
+          --server $(params.argocd-url) \
+          --auth-token $(cat /var/run/secrets/kubernetes.io/serviceaccount/token) \
+          --insecure
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: ci-cd-pipeline
+spec:
+  params:
+    - name: IMAGE
+      description: Image name including registry
+    - name: IMAGE_TAG
+      description: The image tag to use
+    - name: MANIFEST_PATH
+      description: Path to Kubernetes manifests
+      default: kubernetes
+  workspaces:
+    - name: shared-workspace
+  tasks:
+    - name: clone-repo
+      taskRef:
+        name: git-clone
+        kind: ClusterTask
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+      params:
+        - name: url
+          value: https://github.com/HEMAAAAA/Ruby-App.git
+        - name: revision
+          value: main
+    
+    - name: build-and-push
+      taskRef:
+        name: buildah
+        kind: ClusterTask
+      runAfter:
+        - clone-repo
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      params:
+        - name: IMAGE
+          value: $(params.IMAGE):$(params.IMAGE_TAG)
+    
+    - name: update-manifests
+      taskRef:
+        name: update-k8s-manifests
+      runAfter:
+        - build-and-push
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      params:
+        - name: image-name
+          value: docker.io/hema995/budgetapp
+        - name: image-tag
+          value: $(params.IMAGE_TAG)
+        - name: manifest-path
+          value: $(params.MANIFEST_PATH)
+    
+    - name: git-commit
+      taskRef:
+        name: git-commit-push
+      runAfter:
+        - update-manifests
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      params:
+        - name: message
+          value: "Update image tag to $(params.IMAGE_TAG)"
+    
+    - name: sync-application
+      taskRef:
+        name: argocd-sync
+      runAfter:
+        - git-commit
+      params:
+        - name: application-name
+          value: budget-app

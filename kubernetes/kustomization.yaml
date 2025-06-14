@@ -13,3 +13,7 @@ namespace: budget-app
 commonLabels:
   app.kubernetes.io/name: budget-app
   app.kubernetes.io/part-of: budget-app
+
+images:
+- name: docker.io/hema995/budgetapp
+  newTag: latest

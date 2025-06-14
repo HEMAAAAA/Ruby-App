@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argocd-image-updater
+  namespace: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: argocd-image-updater
+  template:
+    metadata:
+      labels:
+        app: argocd-image-updater
+    spec:
+      serviceAccountName: argocd-image-updater
+      containers:
+      - name: argocd-image-updater
+        image: argoprojlabs/argocd-image-updater:v0.12.2
+        env:
+        - name: ARGOCD_GRPC_WEB
+          value: "true"
+        - name: ARGOCD_SERVER
+          value: "argocd-server.argocd.svc.cluster.local"
+        - name: ARGOCD_INSECURE
+          value: "true"
+        - name: GITCREDS_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: git-creds
+              key: username
+        - name: GITCREDS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: git-creds
+              key: password
+        volumeMounts:
+        - name: config
+          mountPath: /app/config
+      volumes:
+      - name: config
+        configMap:
+          name: argocd-image-updater-config

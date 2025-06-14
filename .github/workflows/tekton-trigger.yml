@@ -1,0 +1,26 @@
+name: Tekton Trigger
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  trigger-tekton:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Trigger Tekton Pipeline
+      run: |
+        curl -X POST \
+          -H "Content-Type: application/json" \
+          -H "X-GitHub-Event: push" \
+          -d '{
+            "repository": {
+              "url": "https://github.com/HEMAAAAA/Ruby-App.git"
+            },
+            "head_commit": {
+              "id": "${{ github.sha }}"
+            }
+          }' \
+          http://el-budget-app-event-listener.default.svc.cluster.local:8080

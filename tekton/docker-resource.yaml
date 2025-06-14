@@ -1,0 +1,10 @@
+# docker-image-resource.yaml
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: docker-image
+spec:
+  type: image
+  params:
+    - name: url
+      value: docker.io/hema995/budgetapp:$(params.IMAGE_TAG)
