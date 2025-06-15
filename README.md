@@ -53,6 +53,10 @@ gcloud container clusters get-credentials budget-app-cluster --zone=us-central1-
 4. **Image Updates** (ArgoCD Image Updater):
    - Monitors for new images
    - Updates manifests automatically
+  
+
+## Loom Video 🔗
+https://www.loom.com/share/774ba75d1aaf458688658994d3964b67?sid=edae3e6a-6dd7-49d4-a060-666fd4162978
 
 ## Manual Pipeline Execution
 
